@@ -29,9 +29,4 @@ urlpatterns = [
     path('api/v1/carts/', include('apps.cart.urls')),
     path('api/v1/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/v1/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-
 ]
-
-
-# TODO: dunno if to add any static or not. dont want
-# urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

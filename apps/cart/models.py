@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from rest_framework.exceptions import ValidationError
 
 from apps.product.models import Product
 from apps.user.models import User
@@ -37,7 +38,7 @@ class CartManager(models.Manager):
 
     def _get_user_cart(self, request, create_if_missing):
         if request.user.is_authenticated:
-            cart = self.get(user=request.user)
+            cart = request.user.cart
         else:
             session_cart_id = request.session.get('cart_id')
             if session_cart_id:
@@ -56,9 +57,16 @@ class CartItemManager(models.Manager):
         return super().get_queryset().select_related('cart', 'product')
 
     def add_product_to_cart(self, cart, product_id, quantity=1):
-        product = Product.objects.get(id=product_id)
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            raise ValidationError({'product_id': 'Product with this ID does not exist.'})
+
         cart_item, created = self.get_or_create(cart=cart, product=product)
-        cart_item.quantity += quantity if not created else quantity
+        if created:
+            cart_item.quantity = quantity
+        else:
+            cart_item.quantity += quantity
         cart_item.save()
         return cart_item
 
@@ -76,7 +84,7 @@ class CartItemManager(models.Manager):
 
 class Cart(models.Model):
     public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart', null=True)
     products = models.ManyToManyField(Product, through='CartItem')
 
     objects = CartManager()

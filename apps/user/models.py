@@ -18,8 +18,7 @@ class User(AbstractUser):
     user_permissions = models.ManyToManyField(
         'auth.Permission', related_name='custom_user_permissions', blank=True
     )
-
-    # square_customer_id = models.CharField(max_length=50, null=True, blank=True)
+    square_customer_id = models.CharField(max_length=50, null=True, blank=True)
 
     @property
     def full_name(self):

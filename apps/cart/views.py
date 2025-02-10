@@ -1,19 +1,17 @@
-from django.http import Http404
+from django.db import transaction
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from apps.cart.models import CartItem, Cart
 from apps.cart.serializers import CartSerializer, CartItemSerializer, CartItemActionSerializer
-from apps.product.models import Product
 
 
 @extend_schema(tags=['Carts'])
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects
-    # http_method_names = ['get', 'post', 'delete']
     permission_classes = [AllowAny]
     serializer_class = CartSerializer
 
@@ -39,10 +37,13 @@ class CartItemViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Cart items management (CartItem).
     """
-    # http_method_names = ['get', 'post', 'delete', 'patch', ]
     serializer_class = CartItemSerializer
 
+    def get_queryset(self):
+        return self.request.user.cart.products
+
     @action(detail=False, methods=['post'])
+    @transaction.atomic
     def add_product(self, request):
         serializer = CartItemActionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -77,7 +78,3 @@ class CartItemViewSet(viewsets.ModelViewSet):
 
         response_data = CartItemSerializer(cart_item).data
         return Response(response_data)
-
-
-# TODO check logic inside views
-# TODO maybe there need to add and check product availability but not sure

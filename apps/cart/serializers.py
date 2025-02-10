@@ -10,7 +10,7 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        fields = '__all__'
+        exclude = ['id', ]
 
     def get_items(self, obj):
         return CartItemSerializer(obj.cartitem_set.all(), many=True).data
@@ -20,9 +20,11 @@ class CartSerializer(serializers.ModelSerializer):
 
 
 class CartItemSerializer(serializers.ModelSerializer):
+    product_name = serializers.CharField(source='product.name', read_only=True)
+
     class Meta:
         model = CartItem
-        fields = '__all__'
+        exclude = ['id', 'cart']
 
 
 class CartItemActionSerializer(serializers.Serializer):
