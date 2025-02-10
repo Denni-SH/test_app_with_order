@@ -5,3 +5,6 @@ django-environ==0.11.2
 drf-spectacular==0.27.2
 pytest==8.3.3
 pytest-django==4.9.0
+squareup==38.1.0.20240919
+celery==5.4.0
+redis==5.2.0
